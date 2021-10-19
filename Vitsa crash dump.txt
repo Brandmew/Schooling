@@ -1,0 +1,16 @@
+Problem signature:
+Problem Event Name: APPCRASH
+Application Name: Flocking Off.scr
+Application Version: 0.0.0.0
+Application Timestamp: 4e8b0d10
+Fault Module Name: Flocking Off.scr
+Fault Module Version: 0.0.0.0
+Fault Module Timestamp: 4e8b0d10
+Exception Code: c0000005
+Exception Offset: 00003f95
+OS Version: 6.0.6002.2.2.0.256.1
+Locale ID: 2057
+Additional Information 1: 561d
+Additional Information 2: 584d9259ea2a2af647cc99ec7b45f9b0
+Additional Information 3: 9e78
+Additional Information 4: 26669a3a766462b74a4ac4870e06b63c
