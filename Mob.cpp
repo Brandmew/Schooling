@@ -1,5 +1,4 @@
 #include "Mob.h"
-//#include "C:\Users\Brum\Documents\Visual Studio 2012\Projects\Intro 3D Game\Mine\Pick\d3dUtility.h"
 
 Mob StandardMob(void)
 {
