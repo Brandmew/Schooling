@@ -9,20 +9,22 @@ const int MAXBIRDVEL = (int)800;
 
 const int MAXBIRDS = (int)10000;
 
-const ULONG EXIT_CUST_THREAD  = 6666;
+const ULONG EXIT_CUST_THREAD = 6666;
+const ULONG CUST_THREAD_MOVEMENT = 1;
+const ULONG CUST_THREAD_DISPLAY = 2;
+const ULONG CUST_THREAD_RENDER = 3;
+const ULONG CUST_THREAD_INTALISE = 100;
+const ULONG CUST_THREAD_ERROR = 0;
+
 const int NumberOfThreads = (int)16;
 POINT MousePosition;
 POINT LastMousePosition;
+float CurrentClosestDist = (FLOAT)INFINITE; //mouse
 
-UINT SelectedBird;
-UINT MouseBird;
+int SelectedBird;
+int MouseBird;
 
 //int ThdsPerBlk = 256;
-
-//Current Bird Buffer
-//static int CurrBB;
-////New Bird Buffer
-//static int NewBB;
 
 static Mob Bird[MAXBIRDS + 1];
 

@@ -109,7 +109,7 @@ bool  InitD3D(D3DDEVTYPE deviceType, IDirect3DDevice9** device, bool windowed, H
 		vp = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 
 	// Step 3: Fill out the D3DPRESENT_PARAMETERS structure.
-	hr = d3d9->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, DispMode );
+	HRD(d3d9->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, DispMode ));
 	DWORD QualityLevels = 0;
 	hr = d3d9->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, deviceType, DispMode->Format, windowed, D3DMULTISAMPLE_8_SAMPLES, &QualityLevels);
 
@@ -123,7 +123,7 @@ bool  InitD3D(D3DDEVTYPE deviceType, IDirect3DDevice9** device, bool windowed, H
 	d3dpp.BackBufferHeight = 0;//DispMode->Height;
 	d3dpp.BackBufferFormat           = DispMode->Format;
 	d3dpp.BackBufferCount            = 1;
-	d3dpp.MultiSampleType            = D3DMULTISAMPLE_8_SAMPLES;
+	d3dpp.MultiSampleType            = D3DMULTISAMPLE_4_SAMPLES;
 	d3dpp.MultiSampleQuality         = QualityLevels - 1;
 	d3dpp.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
 	d3dpp.hDeviceWindow              = AppHnd;
@@ -300,7 +300,7 @@ bool d3d::DrawSphere(IDirect3DDevice9* Device, const D3DXVECTOR3 Vec, const floa
 		D3DMATERIAL9 ColTemp = Col;
 		ColTemp.Diffuse.a = Tranparency; 
 		Device->SetMaterial(&ColTemp);
-		if (SphereMesh)		SphereMesh->DrawSubset(0);
+		if (SphereMesh)	SphereMesh->DrawSubset(0);
 	}
 	else
 	{

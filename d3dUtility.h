@@ -8,6 +8,12 @@
 #include <limits>
 #include <D3D9Types.h>
 
+#ifdef NDEBUG
+#define HRD(x) (x)
+#else
+#define HRD(x) if(FAILED(x)) DebugBreak()
+#endif // DEBUG
+
 LRESULT CALLBACK WndProc(HINSTANCE hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int EnterMsgLoop();
@@ -71,6 +77,8 @@ namespace d3d
 	const D3DMATERIAL9 GREEN_MTRL  = InitMtrl(GREEN, GREEN, GREEN, BLACK, 2.0f);
 	const D3DMATERIAL9 BLUE_MTRL   = InitMtrl(BLUE, BLUE, BLUE, BLACK, 2.0f);
 	const D3DMATERIAL9 YELLOW_MTRL = InitMtrl(YELLOW, YELLOW, YELLOW, BLACK, 2.0f);
+	const D3DMATERIAL9 CYAN_MTRL = InitMtrl(CYAN, CYAN, CYAN, BLACK, 2.0f);
+	const D3DMATERIAL9 MAGENTA_MTRL = InitMtrl(MAGENTA, MAGENTA, MAGENTA, BLACK, 2.0f);
 
 	//
 	// Bounding Objects / Math Objects

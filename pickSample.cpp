@@ -25,6 +25,8 @@ using namespace System;
 using namespace System::Threading;
 using namespace System::Threading::Tasks;
 
+
+
 //ThreadStart MoveBirdThread;
 Globs Glbs;
 Globs *pGlbs;
@@ -59,8 +61,6 @@ using namespace Pick;
 
 void SetUpBirds(void);
 //void MoveBird();
-bool DrawLine(float x1, float y1,float x2, float y2, D3DCOLOR Col);
-bool DrawHalfLine(D3DVECTOR* A, D3DVECTOR* B, D3DCOLOR Col);
 bool AnalisewParam(WPARAM wParam);
 void InitBird(Mob* pB);
 bool WriteVars(void);
@@ -79,37 +79,37 @@ bool Setup()
 	//read .ini file from last time
 	ReadVars();
 	// time delta for calcs
-	QueryPerformanceCounter( &lastTime); 
+	QueryPerformanceCounter(&lastTime);
 	//Check to see if we have high res counter.
 	// get the high resolution counter's accuracy
 	QueryPerformanceFrequency(&ticksPerMicroSecondhr);
 	ticksPerMicroSecondhr.QuadPart /= 1000000;
 	// SetUpBirds
-	pGlbs->RoostSphere._center = D3DXVECTOR3(0,0,0);
+	pGlbs->RoostSphere._center = D3DXVECTOR3(0, 0, 0);
 	pGlbs->RoostSphere._radius = 180;
 	pGlbs->RoostSphere._radiusSqr = pGlbs->RoostSphere._radius * pGlbs->RoostSphere._radius;
 
 	D3DXCreateCylinder(D3DDevice, 0, 4, 10, 3, 1, &Cylinder, 0);
 
-	
+
 	// Set up Font
 	D3DXFONT_DESC lf;
 	D3DXFONT_DESC* plf = &lf;
 	ZeroMemory(&lf, sizeof(D3DXFONT_DESC));
-	lf.Height         = 12;    // in logical units
-	lf.Width          = 6;    // in logical units
-	lf.Weight         = 500;   // boldness, range 0(light) - 1000(bold)
-	lf.Italic         = false;   
-	lf.CharSet        = DEFAULT_CHARSET;
-	lf.OutputPrecision = 0;              
-	lf.Quality        = 0;           
-	lf.PitchAndFamily = 0;  
-	lf.MipLevels			= 0;
+	lf.Height = 12;    // in logical units
+	lf.Width = 6;    // in logical units
+	lf.Weight = 500;   // boldness, range 0(light) - 1000(bold)
+	lf.Italic = false;
+	lf.CharSet = DEFAULT_CHARSET;
+	lf.OutputPrecision = 0;
+	lf.Quality = 0;
+	lf.PitchAndFamily = 0;
+	lf.MipLevels = 0;
 	strcpy_s(lf.FaceName, "Courier\0"); // font style
 
-	if(FAILED(D3DXCreateFontIndirect(D3DDevice, plf, &::Font)))
+	if (FAILED(D3DXCreateFontIndirect(D3DDevice, plf, &::Font)))
 	{
-		ErrorExit( TEXT("D3DXCreateFontIndirect() - FAILED"));		return false;
+		ErrorExit(TEXT("D3DXCreateFontIndirect() - FAILED"));		return false;
 	}
 
 	if (S_OK != (::Font->PreloadCharacters('A', 'Z')))
@@ -126,9 +126,9 @@ bool Setup()
 	}
 	// Load the XFile data.
 	HRESULT hr = 0;
-	ID3DXBuffer* adjBuffer  = 0;
+	ID3DXBuffer* adjBuffer = 0;
 	ID3DXBuffer* mtrlBuffer = 0;
-	DWORD        numMtrls   = 0;
+	DWORD        numMtrls = 0;
 
 
 	hr = D3DXLoadMeshFromX(
@@ -142,7 +142,7 @@ bool Setup()
 		&numMtrls,
 		&Spccrft);
 
-	if(FAILED(hr))
+	if (FAILED(hr))
 	{
 		ErrorExit(TEXT("D3DXLoadMeshFromX"));		return false;
 	}
@@ -151,56 +151,63 @@ bool Setup()
 	// Extract the materials, and load textures.
 	//
 
-	if( mtrlBuffer != 0 && numMtrls != 0 )
+	if (mtrlBuffer != 0 && numMtrls != 0)
 	{
 		D3DXMATERIAL* mtrls = (D3DXMATERIAL*)mtrlBuffer->GetBufferPointer();
 
-		for(DWORD i = 0; i < numMtrls; i++)
+		for (DWORD i = 0; i < numMtrls; i++)
 		{
 			// the MatD3D property doesn't have an ambient value set
 			// when its loaded, so set it now:
 			mtrls[i].MatD3D.Ambient = mtrls[i].MatD3D.Diffuse;
 
 			// save the ith material
-			Mtrls.push_back( mtrls[i].MatD3D );
+			Mtrls.push_back(mtrls[i].MatD3D);
 
 			// check if the ith material has an associative texture
-			if( mtrls[i].pTextureFilename != 0 )
+			if (mtrls[i].pTextureFilename != 0)
 			{
 				// yes, load the texture for the ith subset
 				IDirect3DTexture9* tex = 0;
 				D3DXCreateTextureFromFile(D3DDevice, mtrls[i].pTextureFilename, &tex);
 
 				// save the loaded texture
-				myTextures.push_back( tex );
+				myTextures.push_back(tex);
 			}
 			else
 			{
 				// no texture for the ith subset
-				myTextures.push_back( 0 );
+				myTextures.push_back(0);
 			}
 		}
 	}
-	d3d::Release<ID3DXBuffer*>(mtrlBuffer); // done w/ buffer
+	d3d::Release<ID3DXBuffer*>(mtrlBuffer);
 
-	//
-	// Optimize the mesh.
-	//
-
-	hr = Spccrft->OptimizeInplace(		
-		D3DXMESHOPT_ATTRSORT |
-		D3DXMESHOPT_COMPACT  |
-		D3DXMESHOPT_VERTEXCACHE,
-		(DWORD*)adjBuffer->GetBufferPointer(),
-		0, 0, 0);
-
-	d3d::Release<ID3DXBuffer*>(adjBuffer); // done w/ buffer
-
-	if(FAILED(hr))
+	hr = Spccrft->OptimizeInplace(D3DXMESHOPT_ATTRSORT | D3DXMESHOPT_COMPACT | D3DXMESHOPT_VERTEXCACHE,
+		(DWORD*)adjBuffer->GetBufferPointer(), 0, 0, 0);
+	d3d::Release<ID3DXBuffer*>(adjBuffer);
+	if (FAILED(hr))
 	{
-		::MessageBox(0,  "OptimizeInplace() - FAILED", 0, 0);
+		::MessageBox(0, "OptimizeInplace() - FAILED", 0, 0);
 		return false;
 	}
+
+	HRD(D3DDevice->CreateVertexBuffer(sizeof(LineBuff), D3DUSAGE_DONOTCLIP, LineVertexFVF, D3DPOOL_MANAGED, &v_buffer, NULL));
+	//HRD(D3DDevice->CreateVertexBuffer(sizeof(LineBuff), D3DUSAGE_DYNAMIC | D3DUSAGE_DONOTCLIP, LineVertexFVF, D3DPOOL_SYSTEMMEM, &v_buffer, NULL));
+
+	// Set indecies for lines between birds - this is effectivly a const.
+	HRD(D3DDevice->CreateIndexBuffer(sizeof(IndexBuf), D3DUSAGE_DONOTCLIP | D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &i_buffer, NULL));
+	ZeroMemory(IndexBuf, sizeof(IndexBuf));
+	for (WORD i = 0; i < NearestMobStackSize; i++)
+	{
+		//IndexBuf[i*2] = 0;
+		IndexBuf[i*2 + 1] = i+1;
+	}
+	void* pVideoRam;
+	HRD(i_buffer->Lock(0, sizeof(IndexBuf), (void**)&pVideoRam, 0/*D3DLOCK_DISCARD*/));    // lock the buffer
+	memcpy(pVideoRam, IndexBuf, sizeof(WORD) * NearestMobStackSize * 2);    // copy the indecies to the locked buffer
+	HRD(i_buffer->Unlock());    // unlock the buffer
+
 	SetUpBirds();
 	// Sort Birds Linked list
 	pGlbs->BirdsLLTail = Mob::Sort(&Bird[0],pGlbs->BirdsCount);
@@ -214,7 +221,7 @@ bool Setup()
 
 	D3DDevice->SetLight(0, &light);
 	D3DDevice->LightEnable(0, true);
-	D3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+	D3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, false);
 	D3DDevice->SetRenderState(D3DRS_SPECULARENABLE, false);
 
 	TheCamera.setPosition(&D3DXVECTOR3(0.0f, 0.0f, -2000.0f));
@@ -232,16 +239,6 @@ bool Setup()
 			1.0f,
 			10000.0f);
 	D3DDevice->SetTransform(D3DTS_PROJECTION, &proj);
-
-	// Create Line Interface
-	if(FAILED(D3DXCreateLine(D3DDevice, &Line)))
-	{
-
-	#ifdef _DEBUG
-		::MessageBox(0, "D3DXCreateLine() - FAILED", 0, 0);
-	#endif //_DEBUG
-		return false;
-	}
 
 	//Setup threads
 	_SYSTEM_INFO sysInfo;
@@ -324,8 +321,11 @@ bool Setup()
 		thisThread[i].WaitSignal = 0;
 		ThreadParam[i] = i;
 		thisThread[i].ThreadPtr = (HANDLE)_beginthreadex(0, 1 << 16 , MBThreadWrap, &ThreadParam[i],0, &thisThread[i].ID);
-		thisThread[i].PreviousProc
-			= SetThreadIdealProcessor(&thisThread[i].ThreadPtr, thisThread[i].PrefferedProc);
+		thisThread[i].PreviousProc = SetThreadIdealProcessor(&thisThread[i].ThreadPtr, thisThread[i].PrefferedProc);
+		
+		
+		//HRD(D3DDevice->CreateVertexBuffer(sizeof(LineBuff), D3DUSAGE_DONOTCLIP, LineVertexFVF, D3DPOOL_MANAGED, &v_buffer, NULL));
+
 		//if (thisThread[ThisThreadNumber].PreviousProc == (DWORD)-1)
 		//{
 		//	ErrorExit(TEXT("SetThreadIdealProcessor"));
@@ -351,13 +351,13 @@ void Cleanup()
 		CloseHandle(thisThread[i].ThreadPtr);
 	}
 	for(UINT i = 0; i < myTextures.size(); i++) d3d::Release<IDirect3DTexture9*>( myTextures[i] );
+	d3d::Release<IDirect3DVertexBuffer9*>(v_buffer);
+	d3d::Release<IDirect3DIndexBuffer9*>(i_buffer);
 	d3d::Release<ID3DXMesh*>(Cylinder);
 	d3d::Release<ID3DXFont*>(::Font);
-	d3d::Release<ID3DXLine*>(Line);
 	d3d::Release<ID3DXMesh*>(Spccrft);
 	d3d::DrawSphere(0,D3DXVECTOR3(0,0,0),0,0,D3DMATERIAL9());
 	d3d::Release<IDirect3D9*>(d3d9Obj); // done with d3d9 object
-	if (pGlbs->DlgOpen) {}
 }
 
 static bool Display(void)
@@ -365,6 +365,7 @@ static bool Display(void)
 	pGlbs = &Glbs;
 	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 	D3DXVECTOR3 centre(0.0f, 1.0f, 0.0f);
+	static float CameraCircle = 0;
 
 	if (D3DDevice)
 	{
@@ -374,7 +375,6 @@ static bool Display(void)
 		timeDelta.QuadPart = (currTime.QuadPart - lastTime.QuadPart);
 		TimeDeltaAnim = (float)(timeDelta.QuadPart / ticksPerMicroSecondhr.QuadPart) / 1000000;
 
-		static float CameraCircle = 0;
 
 		if (timeDelta.QuadPart > 1000000 || timeDelta.QuadPart == 0)
 		{
@@ -386,8 +386,8 @@ static bool Display(void)
 		// move the camera
 		if (pGlbs->BeABirdTog.bval)
 		{
-			D3DXVECTOR3 eye = Bird[SelectedBird].Pos - (Bird[SelectedBird].NormVel() * 150.0f);
-			D3DXMatrixLookAtLH(&::View, &eye, &(Bird[SelectedBird].Pos), &up);
+			D3DXVECTOR3 eye = Bird[1].Pos - (Bird[1].NormVel() * 150.0f);
+			D3DXMatrixLookAtLH(&::View, &eye, &(Bird[1].Pos), &up);
 		}
 		else
 		{
@@ -409,43 +409,97 @@ static bool Display(void)
 
 		D3DDevice->SetTransform(D3DTS_VIEW, &::View);
 		D3DDevice->GetViewport(pvp);
-		// now have a view we can calculate x,y screen pos only if they are used
-		float CurrentClosestDist = (FLOAT) INFINITE;
-		MouseBird = 0;
-		float DistamceToMouse = 0;
-		for (int i = 0; i < pGlbs->BirdsCount; i++)
-		{
-			float X, Y, Z;
-			D3DXVECTOR2 PntBird;
-			D3DXVec3Project(&Bird[i].ScrPos, &D3DXVECTOR3(0, 0, 0), pvp, &proj, &::View, &Bird[i].WorldTrans);
-			X = Bird[i].ScrPos.x;
-			Y = Bird[i].ScrPos.y;
-			Z = Bird[i].ScrPos.z;
+		// now have a view we can calculate x,y screen pos
+		pBird = &Bird[0];
+		int freeThread = -1;
+		int chkThread = 0;
+		ULONG ThreadComparisonValue = 0;
+		pGlbs->ThreadCount = 0;
+		CurrentClosestDist = (FLOAT)INFINITE;
 
-			if (Z > 0 && X > 0 && Y > 0 && X < Width && Y < Height)
+		while (true)
+		{
+
+			freeThread = -1;
+			chkThread = 0;
+			DWORD dwCreateFlags = 0;
+			while (freeThread == -1 && pBird != 0)
 			{
-				Bird[i].OnCreen = TRUE;
-				PntBird.x = MousePosition.x - X;
-				PntBird.y = MousePosition.y - Y;
-				DistamceToMouse = sqrtf(D3DXVec2LengthSq(  &PntBird ) );
-				if (DistamceToMouse < CurrentClosestDist)
+				if (thisThread[chkThread].Busy == FALSE)
 				{
-					CurrentClosestDist = DistamceToMouse;
-					MouseBird = i;
+					freeThread = chkThread;
+					thisThread[freeThread].Busy = TRUE;
+					thisThread[freeThread].ThisBird = pBird;
+					thisThread[freeThread].WaitSignal = CUST_THREAD_DISPLAY;//non zero to fire
+					WakeByAddressSingle(&thisThread[freeThread].WaitSignal);
+				}
+				chkThread++;
+				if (chkThread >= NumberOfThreads && freeThread == -1)
+				{
+					WaitOnAddress(&pGlbs->ThreadStackHold, &ThreadComparisonValue, sizeof(ULONG), 5);
+					pGlbs->ThreadStackHold = 0;
+					chkThread = 0;
 				}
 			}
-			else
-			Bird[i].OnCreen = FALSE;			
+
+			if (pBird->Next == 0)
+				break;
+			pBird = pBird->Next;
 		}
+
 // Render the birds
 		D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 		D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
-		D3DDevice->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE,true);
+		D3DDevice->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, true);
 		D3DDevice->BeginScene();
 		int cnt = 0;
+
 		pBird = &Bird[0];
-		Line->SetWidth(1.0f);
-		Line->SetAntialias(true);
+		/// This is just unsafe to ask DX to go MT
+
+
+
+		//freeThread = -1;
+		//chkThread = 0;
+		//ThreadComparisonValue = 0;
+		//pGlbs->ThreadCount = 0;
+		//while (true)
+		//{
+		//	if (pBird->OnCreen)
+		//	{
+
+		//		freeThread = -1;
+		//		chkThread = 0;
+		//		DWORD dwCreateFlags = 0;
+		//		while (freeThread == -1 && pBird != 0)
+		//		{
+		//			if (thisThread[chkThread].Busy == FALSE)
+		//			{
+		//				freeThread = chkThread;
+		//				thisThread[freeThread].Busy = TRUE;
+		//				thisThread[freeThread].ThisBird = pBird;
+		//				thisThread[freeThread].WaitSignal = CUST_THREAD_RENDER;//non zero to fire
+		//				WakeByAddressSingle(&thisThread[freeThread].WaitSignal);
+		//			}
+		//			chkThread++;
+		//			//wait if no threads free
+		//			if (chkThread >= NumberOfThreads && freeThread == -1)
+		//			{
+		//				WaitOnAddress(&pGlbs->ThreadStackHold, &ThreadComparisonValue, sizeof(ULONG), 5);
+		//				pGlbs->ThreadStackHold = 0;
+		//				chkThread = 0;
+		//			}
+		//		}
+		//	}
+		//	cnt++;
+
+		//	if ( (pBird->Next == 0) || (cnt >= pGlbs->BirdsCount) )
+		//		break;
+		//	pBird = pBird->Next;
+		//}
+
+
+
 		while (cnt <= pGlbs->BirdsCount)
 		{
 			if (pBird->OnCreen)
@@ -472,10 +526,10 @@ static bool Display(void)
 					Cylinder->DrawSubset(0);
 				}
 
-				if ( (NumberTog.bval) || (cnt == MouseBird) )
+				if ( (NumberTog.bval) || (pBird->ID == MouseBird) )
 				{
 					ZeroMemory(&MobString, sizeof(MobString));
-					sprintf_s(MobString, "%u", pBird->UtilityNo);
+					sprintf_s(MobString, "%u", pBird->ID);
 					RECT rect = { (LONG)pBird->ScrPos.x, (LONG)pBird->ScrPos.y, Width, Height };
 					::Font->DrawText(0, MobString, -1, &rect, DT_TOP | DT_LEFT, 0xffffffff);
 				} //(NumberTog)
@@ -484,7 +538,12 @@ static bool Display(void)
 				{
 					Mob* OB = 0;
 					int OtherBirdCnt = 0;
-					Line->Begin();
+					int Linecount = 0;
+					ZeroMemory(LineBuff, sizeof(LineBuff));
+					LineBuff[0].x = pBird->ScrPos.x;
+					LineBuff[0].y = pBird->ScrPos.y;
+					LineBuff[0].z = pBird->ScrPos.z;
+					LineBuff[0].col = d3d::BLACK;
 					while (OtherBirdCnt < pBird->NoOtherMobs)
 					{
 						OB = pBird->ClosestMob[OtherBirdCnt];
@@ -492,23 +551,45 @@ static bool Display(void)
 						{
 							if (OB->OnCreen)
 							{
-								if (!DrawHalfLine(&pBird->ScrPos , &OB->ScrPos, pBird->ClosestCol[OtherBirdCnt]))
-								{
-									ErrorExit(TEXT("Line failed"));
-								}
+								Linecount++;
+								LineBuff[Linecount].x = (OB->ScrPos.x + pBird->ScrPos.x)/2;
+								LineBuff[Linecount].y = (OB->ScrPos.y + pBird->ScrPos.y)/2;
+								LineBuff[Linecount].z = (OB->ScrPos.z + pBird->ScrPos.z)/2;
+								LineBuff[Linecount].col = pBird->ClosestCol[OtherBirdCnt];
 							}
 						}
 						OtherBirdCnt++;
 					}
-					Line->End();
+					if (Linecount)
+					{
+						DWORD TFVF;
+						void* pVideoRam;
+						HRD(v_buffer->Lock(0, 0, (void**)&pVideoRam, D3DLOCK_DISCARD));    // lock the vertex buffer
+						memcpy(pVideoRam, LineBuff, sizeof(LineVertex) * (Linecount + 1));    // copy the vertices to the locked buffer
+						HRD(v_buffer->Unlock());    // unlock the vertex buffer
+
+						//D3DINDEXBUFFER_DESC indBufDesc;
+						HRD(D3DDevice->GetFVF(&TFVF));
+						//D3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
+						HRD(D3DDevice->SetFVF(LineVertexFVF));
+						HRD(D3DDevice->SetStreamSource(0, v_buffer, 0, sizeof(LineVertex)));
+						HRD(D3DDevice->SetIndices(i_buffer));
+						//i_buffer->GetDesc(&indBufDesc);
+						HRD(D3DDevice->DrawIndexedPrimitive(D3DPT_LINELIST, 0, 0, Linecount * 2, 0, Linecount));
+						HRD(D3DDevice->SetFVF(TFVF));
+					}
 				}
 			}
+
+
 			cnt++;
 			pBird = &Bird[cnt];
 			if (cnt > pGlbs->BirdsCount)
 				break;
-		} //while (cnt < BirdsCount)
-// Render predior
+		}//while (cnt < BirdsCount)
+		
+		 
+		// Render predior
 		//pBird= &Pred[0];
 		//Device->SetTransform(D3DTS_WORLD, &(pBird->WorldTrans));
 		//Device->SetMaterial(&pBird->mtrlCol);
@@ -529,11 +610,13 @@ static bool Display(void)
 		LARGE_INTEGER tickStarthr;   // Hires point in time
 		LARGE_INTEGER tickFinishhr;   // Hires point in time
 		QueryPerformanceCounter(&tickStarthr);
+		MouseBird = 0;
+		// dont scan z list use counter to reduce ailseing
 		pBird = &Bird[0];
-		ULONG ThreadComparisonValue =0;
+		ThreadComparisonValue =0;
 		pGlbs->ThreadCount = 0;
-		int freeThread = -1;
-		int chkThread = 0;
+		freeThread = -1;
+		chkThread = 0;
 		while (!PauseTog.bval)
 		{
 			
@@ -547,17 +630,13 @@ static bool Display(void)
 					freeThread = chkThread;
 					thisThread[freeThread].Busy = TRUE;
 					thisThread[freeThread].ThisBird = pBird;
-					thisThread[freeThread].WaitSignal = 1;//non zero to fire
+					thisThread[freeThread].WaitSignal = CUST_THREAD_MOVEMENT;//non zero to fire
 					WakeByAddressSingle(&thisThread[freeThread].WaitSignal);
 				}
 				chkThread++;
 				if (chkThread >= NumberOfThreads && freeThread == -1)
 				{
-					//if (!WaitOnAddress(&pGlbs->ThreadStackHold, &ThreadComparisonValue, sizeof(ULONG), 100))
-					//{
-					//	ErrorExit(TEXT("Thread Lock?"));
-					//}
-
+					WaitOnAddress(&pGlbs->ThreadStackHold, &ThreadComparisonValue, sizeof(ULONG), 5);
 					pGlbs->ThreadStackHold = 0;
 					chkThread = 0;
 				}
@@ -604,223 +683,17 @@ static bool Display(void)
 		return false;
 	} //if device
 
-
-
 }
-
-// void Mob::MoveBird() {
-//	 pGlbs = &Glbs;
-//
-//	Mob* pB = this;
-//	LowStack< Mob, float, NearestMobStackSize> ClosestMobs(FLT_MAX);
-//	
-//	float PosX = this->Pos.x;
-//	float PosY = this->Pos.y;
-//	float PosZ = this->Pos.z;
-//	D3DXVECTOR3 Position = this->Pos;
-//
-//	// Reset Acc and add a Jiggle (call it air turbulance if you will!)
-//	this->Acc.x = (d3d::randf()-0.5f)/10;
-//	this->Acc.y = (d3d::randf()-0.5f)/10;
-//	this->Acc.z = (d3d::randf()-0.5f)/10;
-//
-//	//Check bounds roost sphere
-//	if(D3DXVec3LengthSq(&Position) > pGlbs->RoostSphere._radiusSqr )
-//	{
-//		//Turn bird (by accellerating toward) origin.
-//		this->Acc -= (Position)*(pGlbs->RoostInf / 500) ;
-//	}
-//
-//	// Create a list (user stack) of birds that can be seen.
-//	// Scan down & up the sorted linked list to find closest birds.
-//	// store pointers on the stack. 
-//	// Box testing is done rather than going straight for sphere
-//	Mob* OtherBird;
-//	OtherBird = this->Prev;
-//
-//	D3DXVECTOR3 VectorToOtherBird;
-//	D3DXVECTOR3 NormalVectorToOtherBird;
-//	float AngleToOtherBird = 0;
-//	float LengthToOtherBird = 0;
-//
-//	///
-//	while ( (OtherBird) && (abs(PosZ - OtherBird->Pos.z) < pGlbs->AttractDist ) )
-//	{
-//		if (abs(PosY - OtherBird->Pos.y) < pGlbs->AttractDist )
-//		{
-//			if (abs(PosX - OtherBird->Pos.x) < pGlbs->AttractDist )
-//			{
-//				//we are inside the Attract Box, Now test the Attract Sphere.
-//				VectorToOtherBird = (OtherBird->Pos - Position);
-//				LengthToOtherBird = D3DXVec3Length(&VectorToOtherBird);
-//				if (LengthToOtherBird < pGlbs->AttractDist)
-//				{
-//					//Are we inside visual arc?
-//					D3DXVec3Normalize(&NormalVectorToOtherBird,&VectorToOtherBird);
-//					AngleToOtherBird = acosf(D3DXVec3Dot(&(this->NormVel()),&NormalVectorToOtherBird));
-//					if (AngleToOtherBird < pGlbs->VisualAngle)
-//					{
-//						//So Its close enough but is it the closest???
-//						ClosestMobs.Add(OtherBird, LengthToOtherBird);
-//					}//Inside Visual Arc
-//				}//Inside sphere
-//			} //z test
-//		} //y test
-//		OtherBird = OtherBird->Prev;
-//		DebugLoopCounter.QuadPart++;
-//	}//test x & Wend
-//	
-//	//same as above but scanning up.
-//	OtherBird = this->Next;
-//	while ( (OtherBird) && (abs(PosZ - OtherBird->Pos.z) < pGlbs->AttractDist ) )
-//	{
-//		if (abs(PosY - OtherBird->Pos.y) < pGlbs->AttractDist )
-//		{
-//			if (abs(PosX - OtherBird->Pos.x) < pGlbs->AttractDist )
-//			{
-//				//we are inside the Attract Box, Now test the Attract Sphere.
-//				VectorToOtherBird = (OtherBird->Pos - Position);
-//				LengthToOtherBird = D3DXVec3Length(&VectorToOtherBird);
-//				if (LengthToOtherBird < pGlbs->AttractDist)
-//				{
-//					//Are we inside visual arc?
-//					D3DXVec3Normalize(&NormalVectorToOtherBird,&VectorToOtherBird);
-//					AngleToOtherBird = acosf(D3DXVec3Dot(&(this->NormVel()),&NormalVectorToOtherBird));
-//					if (AngleToOtherBird < pGlbs->VisualAngle)
-//					{
-//						//So Its close enough but is it the closest???
-//						ClosestMobs.Add(OtherBird, LengthToOtherBird);
-//					}//Inside Visual Arc
-//				}//Inside sphere
-//			} //z test
-//		} //y test
-//		OtherBird = OtherBird->Next;
-//		DebugLoopCounter.QuadPart++;
-//	}// Wend
-//
-//	//Now do something with the stack.
-//	
-//	int cnt = 0;
-//	int BirdsSeen = ClosestMobs.GetStackSize();
-//	OtherBird = ClosestMobs.Pull();
-//	//Line->SetWidth(1.0f);
-//	//if (pGlbs->EnvTog.bval) Line->Begin();
-//	while (OtherBird)
-//	{
-//		D3DXVECTOR3 AccTemp;
-//		VectorToOtherBird = (OtherBird->Pos - Position);
-//		D3DXVec3Normalize(&NormalVectorToOtherBird,&VectorToOtherBird);
-//		AngleToOtherBird = acosf(D3DXVec3Dot(&(this->NormVel()),&NormalVectorToOtherBird));
-//		// if Velocity angle diffrence > 90deg (pi/2) then "possibly facing"...
-//		float AngleDifference = acosf(D3DXVec3Dot (&(this->NormVel()), &(OtherBird->NormVel())) );
-//		D3DXCOLOR tempCol = d3d::CYAN ;
-//		AccTemp = D3DXVECTOR3(0,0,0);
-//		float LengthToOtherBird = D3DXVec3Length(&VectorToOtherBird);
-//		this->UtilityNo = 0;
-//		if (LengthToOtherBird < pGlbs->CollDist)
-//		// Avoid collision with other bird
-//		{
-//			AccTemp -= ((pGlbs->CollDist - LengthToOtherBird)*pGlbs->CollInf)*NormalVectorToOtherBird;
-//			tempCol = d3d::RED;
-//		}
-//		else
-//		{
-//			//Attract toward Other Bird
-//			bool facing = (AngleDifference > (D3DX_PI / 2)) ? true : false;
-//			if (facing) // is other bird facing us?
-//			{
-//				float AngFacingUs = acosf( D3DXVec3Dot( &NormalVectorToOtherBird, &( OtherBird->NormVel())));
-//				if ( AngFacingUs > (D3DX_PI - pGlbs->HeadOnEvation) )
-//				{
-//					//Head On - Heading toward each other - evade
-//					AccTemp += ((LengthToOtherBird - pGlbs->CollDist)*pGlbs->AttractInf)*NormalVectorToOtherBird;
-//					tempCol = d3d::MAGENTA;
-//				}
-//				else
-//				{
-//					if (AngFacingUs > D3DX_PI / 2 )
-//					{
-//						//Heading toward each other move away
-//						AccTemp -= (VectorToOtherBird) * (pGlbs->AttractInf);
-//						tempCol = d3d::YELLOW;
-//					}
-//					//else
-//					//{
-//					//	//Behind and heading away.
-//					//	AccTemp += (VectorToOtherBird) * (pGlbs->AttractInf);
-//					//	tempCol = d3d::WHITE;
-//					//}
-//				}
-//			}
-//			else
-//			//If not facing us attract to other.
-//			{
-//				AccTemp += (VectorToOtherBird)* (pGlbs->AttractInf) ;
-//				tempCol = d3d::GREEN;
-//			}
-//		}
-//
-//		this->Acc += (AccTemp*10) / (FLOAT)BirdsSeen;
-//		/////////////////////Move this to Render section.
-//		//if (pGlbs->EnvTog.bval)
-//		//{
-//		//	this->CalcScrXY(pvp,&proj,&::View);
-//		//	if (this->ScrPos.z > 0 && this->ScrPos.x > 0 && this->ScrPos.y > 0 && this->ScrPos.x < Width && this->ScrPos.y < Height)
-//		//	{
-//		//		OtherBird->CalcScrXY(pvp, &proj, &::View);
-//		//		DrawHalfLine(this->ScrPos.x, this->ScrPos.y, OtherBird->ScrPos.x, OtherBird->ScrPos.y, tempCol);
-//		//	}
-//		//}
-//		cnt++;
-//		OtherBird = ClosestMobs.Pull();
-//	}
-//	//if (pGlbs->EnvTog.bval) Line->End();
-//
-//	
-//	this->UtilityNo = cnt;
-//	this->DampenVel( (pGlbs->BirdTopVel + pGlbs->BirdBottomVel) /2 );
-//	this->CapVel(pGlbs->BirdTopVel);
-//	this->CollarVel(pGlbs->BirdBottomVel);
-//	this->Animate(TimeDeltaAnim);
-//	this->GetTransform( );
-//}
 
 void SetUpBirds(void)
 {
 	for(int t = 0; t<=MAXBIRDS; t++)
 	{
 		InitBird(&Bird[t]);
+		Bird[t].ID = t;
 	}
 	Mob::InitaliseLinked(&Bird[0], MAXBIRDS);
 }
-
-
-bool DrawLine(float x1, float y1,float x2, float y2, D3DCOLOR Col)
-{
-	  D3DXVECTOR2 L[2];
-		L[0].x = x1;
-		L[0].y = y1;
-		L[1].x = x2;
-		L[1].y = y2;
-		Line->SetWidth(1);
-		if(FAILED(Line->Draw(&L[0], 2, Col)))
-			return false;
-		return true;
-}
-
-bool DrawHalfLine(D3DVECTOR* A, D3DVECTOR* B, D3DCOLOR Col)
-{
-	  D3DXVECTOR2 L[2];
-		L[0].x = A->x;
-		L[0].y = A->y;
-		L[1].x = (B->x-A->x)/2 + A->x;
-		L[1].y = (B->y-A->y)/2 + A->y;
-		if(FAILED(Line->Draw(&L[0], 2, Col)))
-			return false;
-		return true;
-}
-
-
 
 int EnterMsgLoop(  )
 {
@@ -835,7 +708,7 @@ int EnterMsgLoop(  )
 			::TranslateMessage(&msg);
 			::DispatchMessage(&msg);
 		} 
-  } 
+	} 
 
   return true;//msg.wParam;
 }
@@ -849,7 +722,7 @@ LRESULT CALLBACK WndProc(HINSTANCE hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		
 	case WM_KEYDOWN:
 		//since there's boat load of different keys farm em' out
-		UserKeyUsed  = (AnalisewParam(wParam)) | (Camera::ProcessKeyInput(wParam, &TheCamera, TimeDeltaAnim));
+		UserKeyUsed  = (AnalisewParam(wParam)) || (Camera::ProcessKeyInput(wParam, &TheCamera, TimeDeltaAnim));
 		if( wParam == VK_ESCAPE ) // escape will always kill
 			DestroyWindow(HWND(hwnd));
 		break;

@@ -168,10 +168,10 @@ D3DXMATRIX* Mob::GetTransform()
 		RotAxis = D3DXVECTOR3(VelN.y,-VelN.x,0);
 
 		//D3DXVec3Normalize(&RotAxis,&RotAxis);
-		D3DXMatrixRotationAxis(&WorldTrans,&RotAxis,angle);
+		D3DXMatrixRotationAxis(&Rot,&RotAxis,angle);
 		// Move from origin (local space) to World space
-		D3DXMatrixTranslation(&Rot, Pos.x, Pos.y, Pos.z);
-		D3DXMatrixMultiply(&WorldTrans,&WorldTrans,&Rot);
+		D3DXMatrixTranslation(&WorldTrans, Pos.x, Pos.y, Pos.z);
+		D3DXMatrixMultiply(&WorldTrans,&Rot,&WorldTrans);
 		return &WorldTrans;
 }
 

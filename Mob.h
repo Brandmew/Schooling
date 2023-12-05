@@ -34,7 +34,8 @@ public:
 	bool SwapNext(void);
 	//sawp positions on linked list (Cur <-> Prev)
 	bool SwapPrev(void);
-
+	// ID
+	int ID;
 	// Mob Acceleration
 	D3DXVECTOR3 Acc;
 	// Mob Velocity
@@ -46,6 +47,8 @@ public:
 	// Screen Position after Transformation.
 	D3DXVECTOR3 ScrPos;
 	BOOL OnCreen;
+	// Render info
+	void* pVideoRam = NULL;
 	D3DMATERIAL9 mtrlCol;
 	int UtilityNo;
 	
@@ -66,7 +69,6 @@ public:
 	Mob* ClosestMob[NearestMobStackSize];
 	D3DXCOLOR ClosestCol[NearestMobStackSize];
 	int NoOtherMobs;
-	void MoveBird();
 };
 
 
